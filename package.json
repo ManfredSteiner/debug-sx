@@ -1,0 +1,23 @@
+{
+  "version": "0.0.10",
+  "name": "debug-sx",
+  "description": "extension for small debugging utility",
+  "main": "index",
+  "types": "index",
+  "repository" : { "type" : "git", "url" : "https://github.com/ManfredSteiner/debug-sx" },
+  "scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1"
+  "author": { "name": "Manfred Steiner", "email": "sx@htl-kaindorf.at" },
+  "license": "MIT"
+  },
+  "keywords": [
+    "debug",
+    "log",
+    "debugger"
+  ],
+  "dependencies": {
+    "debug": "^2.6.6",
+    "sprintf": "^1.1.0",
+    "dateFormat": "^2.0.0"
+   },
+}
