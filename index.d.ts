@@ -1,78 +1,109 @@
 // Type definitions for debug-sx
+// see also: https://www.typescriptlang.org/docs/handbook/modules.html
+//           https://www.typescriptlang.org/docs/handbook/modules.html#export--and-import--require
+//           https://www.typescriptlang.org/docs/handbook/declaration-files/by-example.html
 
-declare var debugsx: debugsx.IDebug;
+declare let debugsx: debugsx.IDebug;
 
 export = debugsx;
 export as namespace debugsx;
 
 declare namespace debugsx {
-    export interface IDebug {
-        (namespace: string): debug.IDebugger,
-        coerce: (val: any) => any,
-        disable: () => void,
-        enable: (namespaces: string) => void,
-        enabled: (namespaces: string) => boolean,
-        names: string[],
-        skips: string[],
-        formatters: IFormatters,
-        createLogFileHandler: (filename:string) => debugsx.IHandler,
-        getLogFileHandler: (filename:string) => debugsx.IHandler,
-        getHandlers: () => debugsx.IHandler [],
-        addActiveHandler: (handler: debugsx.IHandler, namespace?: string) => debugsx.IActiveHandler,
-        removeActiveHandler: (activeHandler: debugsx.IActiveHandler) => boolean,
-        getActiveHandlers: () => debugsx.IActiveHandler [],
+  export interface IDebug {
+    (namespace: string): debug.IDebugger,
+    coerce: (val: any) => any,
+    disable: () => void,
+    enable: (namespaces: string) => void,
+    enabled: (namespaces: string) => boolean,
+    // names: string[],
+    // skips: string[],
+    locationEnable: (namespaces: string) => void,
+    locationEnabled: (namespaces: string) => boolean,
+    formatters: IFormatters,
+    handlers: IHandler [],
+    loggers: IDebugger [],
 
-        createDebug: (namespace: string, opts?: IDebugOpts) => debugsx.IDebugger,
-        
-    }
+    createDebug (namespace: string, opts?: IInspectOpts): IDebugger,
+    createConsoleHandler (fd?: string, namespaces?: string, locationNamespaces?: string, colors?: IColor []): IHandler, 
+    createFileHandler (filename:string, namespaces?: string, locationNamespaces?: string, colors?: IColor []): IHandler,
+    addHandler: (...handler: IHandler []) => void,
+    removeHandler: (handler: IHandler) => boolean
+  }
 
-    export interface IFormatters {
-        [formatter: string]: Function
-    }
 
-    export interface IDebugger {
-        (formatter: any, ...args: any[]): void;
-        enabled: boolean;
-        //openLogFile (name:string, group:string) : void;
-        log: Function;
-        namespace: string;
-        addGroup: (groupname:string) => void,
-        removeGroup: (groupname:string) => void,
-        enableConsole: (enable:boolean) => boolean
-    }
+  export interface IDebugger {
+    (formatter: any, ...args: any[]): void;
+    enabled: boolean;
+    locationEnabled: boolean;
+    log: Function;
+    namespace: string;
+    activeHandlers : IActiveHandler [];
+  }
 
-    export interface IDebugOpts {
-      colors?: [ IColorOpts ]
-      location?: boolean;
-      inspectOpts?: IInspectOpts; 
-    }
+  export interface IFormatters {
+    [formatter: string]: Function
+  }
 
-    export interface IColorOpts {
-      color: string;
-      level? : string | RegExp;
-      module?: string | RegExp;
-      inversed?: boolean;
-    }
+  export interface IInspectOpts {
+    showHidden?: boolean;
+    depth?: number;
+    colors?: boolean;
+    customInspect?: boolean;
+    showProxy?: boolean;
+    maxArrayLength?: number;
+    breakLength?: number;
+  }
 
-    export interface IInspectOpts {
-      showHidden?: boolean;
-      depth?: number;
-      colors?: boolean;
-      customInspect?: boolean;
-      showProxy?: boolean;
-      maxArrayLength?: number;
-      breakLength?: number;
-    }
+  export interface IActiveHandler {
+    handler: IHandler;
+    colorOn: string;
+    colorOff: string;
+    locationEnabled: boolean;
+  }
 
-    export interface IHandler {
-      name: string;
-      wstream: NodeJS.WritableStream;
-    }
+  export interface IHandler {
+    hstream: IHandlerWriteStream | IHandlerFileStream | IHandlerConsoleStream;
+    namespaces: string;
+    locationNamespaces: string;
+    colors: string,
+    names: RegExp [],
+    skips: RegExp [],
+    location: { names: RegExp [], skips: RegExp [] },
+    colorTable: string
+    end(): void;
+    enabled(name: string): boolean;
+    locationEnabled(name: string): boolean;
+    getColorCodes(module: string, level:string): IColorCodes;
+  }
 
-    export interface IActiveHandler {
-      handler: debugsx.IHandler;
-      namespace: string;
-      names: RegExp [];
-      skips: RegExp [];
-    }
+  export interface IHandlerWriteStream {
+    wstream: NodeJS.WritableStream;
+    writable: boolean;
+    write(buffer: Buffer | string, cb?: Function): boolean;
+    write(str: string, encoding?: string, cb?: Function): boolean;
+    end(): void;
+  }
+
+
+  export interface IHandlerFileStream extends IHandlerWriteStream {
+    filename: string;
+  }
+
+  export interface IHandlerConsoleStream extends IHandlerWriteStream {
+    name: string;
+  }
+
+  export interface IColorCodes {
+    on: string;
+    off: string;
+  }
+
+  export interface IColor {
+    color: string;
+    namespace?: string | RegExp;
+    level?: string | RegExp;
+    module?: string | RegExp;
+    inverse?: boolean;
+  }
+
 }

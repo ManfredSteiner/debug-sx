@@ -8,169 +8,136 @@ const util = require('util');
 const semver = require('semver');
 const handler = require('./handler')
 
-exports.humanize = require('ms');
+module.exports =  debug;
+debug.humanize = require('ms');
 
-debug['loggers'] = [];
+debug.sprefix = process.env['DEBUG_PREFIX'] || ''; 
+debug.modulewidth = +process.env['DEBUG_MODULEWIDTH'] || 1;
+debug.levelwidth = +process.env['DEBUG_LEVELWIDTH'] || 1;
+debug.npattern =  '%-' + debug.modulewidth + 's %-' + debug.levelwidth + 's';
+debug.tpattern = process.env['DEBUG_TIME'] || 'HH:MM:ss.l';
+debug.dpattern = process.env['DEBUG_TIMEDIFF'] ? '+%-' + process.env['DEBUG_TIMEDIFF'] + 's' : '';
+
+debug.loggers = [];
 debug.handlers = [];
-debug.activeHandlers = [];
-
-function init () {
-  if (exports.location)
-    return;
-  
-  exports.colors = process.env['DEBUG_COLORS'];
-  
-  exports.sprefix = '';
-  if (process.env['DEBUG_PREFIX'] !== undefined) {
-    exports.sprefix = process.env['DEBUG_PREFIX'];
-  }
-  
-  let modulewidth = process.env['DEBUG_MODULEWIDTH'];
-  if (modulewidth === undefined)
-    modulewidth = 1;
-  
-  let levelwidth = process.env['DEBUG_LEVELWIDTH'];
-  if (levelwidth === undefined)
-    levelwidth = 1;
-  
-  exports.npattern =  '%-' + modulewidth + 's %-' + levelwidth + 's';
-  
-  exports.tpattern = 'HH:MM:ss.l';
-  if (process.env['DEBUG_TIME']) {
-    exports.tpattern = process.env['DEBUG_TIME'];
-  }  
-
-  if (process.env['DEBUG_TIMEDIFF']) {
-    exports.dpattern = '+%-' + process.env['DEBUG_TIMEDIFF'] + 's';
-  }  
-
-  exports.format = function (diff, module, level, msg) {
-    let c = false;
-    let x = this.colors;
-    if (exports.defaultColorTable && exports.defaultColorTable[level]) {
-      c = exports.defaultColorTable[level];
-    }
-    let sname = sprintf(exports.npattern, module, level);
-    let stime = exports.tpattern ? dateFormat(new Date(), exports.tpattern) : '';
-    let sdiff = exports.dpattern ? sprintf(exports.dpattern, debug.humanize(diff)) : '';      
-    let prefix = exports.sprefix + stime + ' ' + sdiff + ' ' + sname + ' ';
-    let eprefix = ' '.repeat(prefix.length);
-    let firstLine = c ? c + prefix + '\u001b[0m' : prefix;       
-    return firstLine + msg.split('\n').join('\n' + eprefix);
-  };
-  
-  let locNamespaces = process.env['DEBUG_LOCATION'];
-  if (locNamespaces === undefined) {
-    exports.location = null;
-    return;
-  }
-  
-  var split = (locNamespaces || '').split(/[\s,]+/);
-  var len = split.length;
-  var names = [];
-  var skips = [];
-
-  for (var i = 0; i < len; i++) {
-    if (!split[i]) continue; // ignore empty strings
-    locNamespaces = split[i].replace(/\*/g, '.*?');
-    if (locNamespaces[0] === '-') {
-      skips.push(new RegExp('^' + locNamespaces.substr(1) + '$'));
-    } else {
-      names.push(new RegExp('^' + locNamespaces + '$'));
-    }
-  }
-
-  exports.location = {};
-  exports.location.skips = skips;
-  exports.location.names = names;
-  exports.handlers = [ debug.createDefaultHandler() ];
-}
+debug.defaultHandler = handler.createConsoleHandler();
 
 debug.formatArgsOriginal = debug.formatArgs;
 debug.formatArgs = function formatArgs(args) {
-  if (!this.handlers) {
+  if (!this.activeHandlers) {
     debug.formatArgsOriginal.call(this, args);
   }
 }
 
-
 debug.log = function (...p) {
-  if (!this.handlers) {
-    // no debug-sx init() done, use original debug log function
+  if (!Array.isArray(this.activeHandlers)) {
+    // no debug-sx object, use original debug log function
     let logFn = exports.log || console.log.bind(console);
     logFn.apply(debug, p);
-  } else {
-    let s = formatLogData(p);
-    let i = this.namespace.lastIndexOf('.');
-    let module = i !== -1 ? this.namespace.substr(0, i) : this.namespace;
-    let level = i !== -1 ? this.namespace.substr(i+1) : '';
-    let date = new Date();
-    if (this.handlers) {
-      let msg, msgl, prefix, eprefix;
-      for (let h of this.handlers) {
-        if (!msg) {
-          let sname = sprintf(exports.npattern, module, level);
-          let stime = exports.tpattern ? dateFormat(this.curr, exports.tpattern) : '';
-          let sdiff = exports.dpattern ? sprintf(exports.dpattern, debug.humanize(this.diff)) : '';      
-          prefix = exports.sprefix + stime + ' ' + sdiff + ' ' + sname;
-          eprefix = ' '.repeat(prefix.length);
-          msg = ' ' + s.split('\n').join('\n' + eprefix);
-        }
-        let locEnabled = h.isLocationEnabled(this.namespace);
-        if (locEnabled === true || (locEnabled === undefined &&  isLocationEnabled(this.namespace)) ) {
-          location = '\n' + (new Error).stack.split('\n')[3];
-          msgl = msg + location.split('\n').join('\n' + eprefix);
-        }
-        let colors = h.getColorCodes(module, level);
-
-        if (h.wstream) {
-          if (colors) {
-            h.wstream.write(colors.on);
-            h.wstream.write(prefix);
-            h.wstream.write(colors.off);
-          } else {
-            h.wstream.write(prefix);
-          }
-          h.wstream.write(msgl ? msgl :msg);
-          h.wstream.write('\n');         
-        } else if (h.name === 'console') {
-          if (colors) {
-            console.log(colors.on + prefix + colors.off + (msgl ? msgl : msg) );
-          } else {
-            console.log(prefix + (msgl ? msgl : msg) );
-          }
-        }
-      }
-    }
+    return;
   }
+
+  let s = formatLogData(p);
+  let sname = sprintf(debug.npattern, this.module, this.level);
+  let stime = debug.tpattern ? dateFormat(this.curr, debug.tpattern) : '';
+  let sdiff = debug.dpattern ? sprintf(debug.dpattern, debug.humanize(this.diff)) : '';      
+  let prefix = debug.sprefix + stime + ' ' + sdiff + ' ' + sname;
+  let eprefix = ' '.repeat(prefix.length);
+  let split = s.split('\n');
+  let msg;
+  if (split.length > 1)
+    msg = ' ' + split.join('\n ' + eprefix) + '\n' + eprefix + ' -----------------------------------------------------';
+  else
+    msg = ' ' + split;
+  let msgl;
+
+  for (let ah of this.activeHandlers) {
+    if (!ah.enabled) continue;
+    if (ah.locationEnabled && !msgl) {
+      let location = '\n ' + (new Error).stack.split('\n')[3];;
+      msgl = msg + location.split('\n').join('\n' + eprefix);
+    }
+    ah.write(ah.colorOn);
+    ah.write(prefix);
+    ah.write(ah.colorOff);
+    ah.write(ah.locationEnabled ? msgl : msg);
+    ah.write('\n');
+  }
+
+}
+
+debug.createDebug = function(namespace, opts) {
+  debug.opts = opts;
+  let d = debug(namespace);
+  delete debug.opts;
+  return d;
 };
 
+debug.initOriginal = debug.init;
+debug.init = function (d) {
+  debug.initOriginal(d);
+  if (typeof debug.opts === 'object') {
+    for (let att in debug.opts) 
+      d.inspectOpts[att] = debug.opts[att];
+  }
+  let i = d.namespace.lastIndexOf('.');
+  d.module = i !== -1 ? d.namespace.substr(0, i) : d.namespace;
+  d.level = i !== -1 ? d.namespace.substr(i+1) : '';
+  d.init = init.bind(d);
+  d.init();
+  debug.loggers.push(d);
+}
 
-function isLocationEnabled (name) {
-  if (!exports.location)
-    return;
+init = function () {
+  this.activeHandlers = [];
+  this.locationEnabled = false;
+  this.useColors = true;
+  let handlers = debug.handlers.length === 0 ? [ debug.defaultHandler ] : debug.handlers; 
+  for (let h of handlers) {
+    if (!h.enabled(this.namespace)) continue;
+    let locationEnabled = h.locationEnabled(this.namespace);
+    let colorCodes;
+    if (h.colorTable) 
+      colorCodes = h.getColorCodes(this.namespace, this.module, this.level);
+    else
+      this.useColors = false;
+
+    let ah = new handler.ActiveHandler(h, colorCodes, true, locationEnabled);
+    this.locationEnabled = this.locationEnabled || locationEnabled;
+    this.activeHandlers.push(ah);
+  }
+  this.enabled = this.activeHandlers.length > 0;
   
-  var i, len;
-  for (i = 0, len = exports.location.skips.length; i < len; i++) {
-    if (exports.location.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (i = 0, len = exports.location.names.length; i < len; i++) {
-    if (exports.location.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 
+debug.createConsoleHandler = handler.createConsoleHandler;
+debug.createFileHandler = handler.createFileHandler;
 
-debug.formatters.l = (v) => {
+debug.addHandler = function (...handler) {
+  if (!Array.isArray(handler))
+    handler = [ handler ];
+  this.handlers = this.handlers.concat(handler);
+  for (let d of debug.loggers)
+    d.init();
+}
+ 
+ 
+debug.removeHandler = function (handler) {
+  let i = this.handlers.findIndex(h => handler === h);
+  if (i < 0)
+    return false;
+  this.handlers.splice(i, 1);
+  for (let d of debug.loggers)
+    d.init();
+  return true;
+}
+
+debug.formatters.l = function (v) {
   return '\n    ' + (new Error).stack.split('\n')[6];
 };
 
-debug.formatters.e = (e) => {
+debug.formatters.e = function (e) {
   if (e instanceof Error) {
     let rv = e.stack || e.message;
     while (e.cause && e.cause instanceof Error) {
@@ -179,177 +146,16 @@ debug.formatters.e = (e) => {
     }
     return rv;
   }
-  return JSON.stringify(e);
+  x = this.inspectOpts;
+  return util.inspect(e, x).replace(/\s*\n\s*/g, ' ');
 };
 
-
-debug.getLogFileHandler = function (filename) {
-  return debug.getHandler(filename);
-}
-
-debug.getHandler = function (name) {
-  return debug.handlers.find(h => name === h.name);
-}
-
-debug.getHandlers = function () {
-  return [].concat(debug.handlers);
-}
-
-
-debug.createLogFileHandler = function(filename, colors, locNamespaces) {
-  if (debug.getHandler(filename))
-    throw new Error('LogFileHandler for file ' + filename + ' already created');
-
-  let wstream = fs.createWriteStream(filename, {flags: 'a'});
-  wstream.on('finish', function () {
-    console.log('log file ' + filename + ' has been written');
-  });
-  wstream.on('error', function (err) {
-    console.log('log file ' + filename + ' error');
-    console.log(err);
-  });
-  wstream.on('close', function () {
-    console.log('log file ' + filename + ' closed');
-  });
-  let h = handler.createHandler(filename, wstream, colors, locNamespaces);
-  debug.handlers.push(h);
-  return h;
-}
-
-
-debug.addActiveHandler = function (handler, namespace) {
-  let split = (locNamespaces || '').split(/[\s,]+/);
-  for (let s of split) {
-    if (!s) continue; // ignore empty strings
-    locNamespaces = split[i].replace(/\*/g, '.*?');
-    if (locNamespaces[0] === '-') {
-      skips.push(new RegExp('^' + locNamespaces.substr(1) + '$'));
-    } else {
-      names.push(new RegExp('^' + locNamespaces + '$'));
-    }
+debug.formatters.f = function (f) {
+  if (typeof f === 'function') {
+    return f.call(this);
   }
-
-  debug.activeHandlers.push({ handler: handler, namespace: namespace });
-  debug.updateLoggerEnables();
+  return '';
 }
-
-debug.removeActiveHandler = function (activeHandler) {
-  let i = debug.activeHandlers.find( el => handler === el.handler && namespace === el.namespace);
-  if (i >= 0) {
-    debug.activeHandlers.mslice(i,1);
-    debug.updateLoggerEnables();
-    return true;
-  }
-  return false;
-}
-
-debug.getActiveHandlers =  function () {
-  return [].concat(debug.activeHandlers);
-}
-
-debug.updateLoggerEnables = function () {
-  for (let l of loggers) {
-    l.handlers = [];
-
-  }
-}
-
-
-// to monitor file use tail -f <file> or less -RS +F <file> 
-// or less -RS <file> and press Shift f (CTRL C to stop waiting)
-debug.openLogFile = function(filename, groupname) {
-  let sname = groupname ? groupname + '_wstream' : 'default_wstream';
-  let wstream = fs.createWriteStream(filename, {flags: 'a'});
-  debug[sname] = wstream;
-  wstream.on('finish', function () {
-    console.log('log file ' + filename + ' has been written');
-  });
-  wstream.on('error', function (err) {
-    console.log('log file ' + filename + ' error');
-    console.log(err);
-  });
-  wstream.on('close', function () {
-    console.log('log file ' + filename + ' closed');
-  });
-};
-
-
-debug.closeLogFile = function(groupname) {
-  let sname = groupname ? groupname + '_wstream' : 'wstream';
-  if (debug[sname]) {
-    debug[sname].close();
-    delete debug[sname];
-  }
-};
-
-debug.setColor = function(name, color) {
-  if (!debug.colors)
-    debug.colors = {};
-  if (!color && debug.colors[name]) {
-    delete debug.colors[name];
-  } else {
-    debug.colors[name] = color;
-  }
-};
-
-debug.enableColors = function(enable, groupName) {
-  if (!debug.colors)
-    debug.colors = {};
-  let oldValue = groupName;
-  
-}
-
-debug.createDefaultHandler = function () {
-  return handler.createHandler('console', process.stdout, handler.defaultColorTable);
-}
-
-debug.createHandler = function (name, stream, colors) {
-  return handler.createHandler(name, stream, colors);
-}
-
-debug.createDebug = function(namespace, opts) {
-  //debug.inspectOpts.colors = false;
-  let d = debug(namespace);
-  debug.loggers.push(d);
-  if (!exports.handlers)
-    init();
-  d.handlers = exports.handlers.slice();
-
-  if (opts) {
-    if (opts.inspectOpts) {
-      d.useColors = opts.inspectOpts.colors;
-      d.inspectOpts = opts.inspectOpts;
-    } else {
-      d.useColors = false;
-    }
-    if (opts.colors) {
-      d.handlers = [ debug.createDefaultHandler() ];
-      for (let h of d.handlers) {
-        h.updateColorTable(opts.colors);
-      }
-    }
-  }
-
-  d['addHandler'] = function (name, config) { 
-    d.handlers[name] = true; 
-  };
-  d['removeHandler'] = function (name) {
-    delete d.handlers[name]; 
-    if (Object.keys(d.handlers).length === 0)
-      debug.handlers.console = { };
-  };
-  
-  return d;
-};
-
-debug.originalEnable = debug.enable;
-debug.enable = function(namespaces) {
-  debug.originalEnable(namespaces);
-  let isEnabled = require('debug').enabled;
-  for (let d of debug.loggers) {
-    d.enabled = isEnabled(d.namespace);
-  }
-};
 
 
 // function from log4js / layout.js
@@ -383,8 +189,4 @@ function formatLogData(logData) {
 }
 
 
-
-
-
-module.exports =  debug;
 
