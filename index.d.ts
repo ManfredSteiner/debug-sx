@@ -15,12 +15,15 @@ declare namespace debugsx {
         names: string[],
         skips: string[],
         formatters: IFormatters,
-        createDebug: (namespace: string, opts?: IDebugOpts) => IDebugger,
-        openLogFile: (filename:string, groupname?:string) => void,
-        closeLogFile: (groupname:string) => void,
-        setGroup: (groupname:string, ...debugs: IDebugger []) => void,
-        setColor: (name:string, color:string) => void,
-        enableColors: (enable:boolean, groupName?: string) => boolean
+        createLogFileHandler: (filename:string) => debugsx.IHandler,
+        getLogFileHandler: (filename:string) => debugsx.IHandler,
+        getHandlers: () => debugsx.IHandler [],
+        addActiveHandler: (handler: debugsx.IHandler, namespace?: string) => debugsx.IActiveHandler,
+        removeActiveHandler: (activeHandler: debugsx.IActiveHandler) => boolean,
+        getActiveHandlers: () => debugsx.IActiveHandler [],
+
+        createDebug: (namespace: string, opts?: IDebugOpts) => debugsx.IDebugger,
+        
     }
 
     export interface IFormatters {
@@ -59,5 +62,17 @@ declare namespace debugsx {
       showProxy?: boolean;
       maxArrayLength?: number;
       breakLength?: number;
+    }
+
+    export interface IHandler {
+      name: string;
+      wstream: NodeJS.WritableStream;
+    }
+
+    export interface IActiveHandler {
+      handler: debugsx.IHandler;
+      namespace: string;
+      names: RegExp [];
+      skips: RegExp [];
     }
 }

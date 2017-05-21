@@ -27,12 +27,25 @@ defaultColorTable = [
 
 class Handler {
   
-  constructor (name, wstream, colors, locations) {
+  constructor (name, wstream, colors, locNamespaces) {
     this.name = name;
     this.wstream = wstream ? wstream : process.stderr;
     this.colors = colors;
     this.colorTable = createColorTable(colors);
-    this.locations = locations;
+    
+    let split = (locNamespaces || '').split(/[\s,]+/);
+    let skips = [], names = [];
+    for (let s of split) {
+      if (!s) continue; // ignore empty strings
+      locNamespaces = s.replace(/\*/g, '.*?');
+      if (locNamespaces[0] === '-') {
+        skips.push(new RegExp('^' + locNamespaces.substr(1) + '$'));
+      } else {
+        names.push(new RegExp('^' + locNamespaces + '$'));
+      }
+    }
+    if (skips.length > 0 || names.length > null)
+      this.location = { names: names, skips: skips};
   }
   
   setColorTable (colors) {
@@ -96,10 +109,21 @@ class Handler {
     return undefined;
   }
 
-  isLocationDesired (module, level) {
-    if (typeof this.location === 'boolean')
-      return this.location;
-    return false;
+  isLocationEnabled (name) {
+    if (!this.location)
+      return undefined;
+  
+    for (let re of this.location.skips) {
+      if (re.test(name)) {
+        return false;
+      }
+    }
+    for (let re of this.location.names) {
+      if (re.test(name)) {
+        return true;
+      }
+    }
+    return undefined;
   }
 
 }
@@ -107,6 +131,9 @@ class Handler {
 
 createColorTable = function (config) {
   let rv = { level: {}, module: {}, regExpLevel: [], regExpModule: [] };
+  if (!config)
+    return rv;
+
   for (let c of config) {
     let r = {};
     r.on = c.inversed ? '\u001b[' + ansiColors['inverse'][0] + 'm' : '';
@@ -130,6 +157,10 @@ createColorTable = function (config) {
       rv.module[c.module] = r;
   }
   return rv;
+}
+
+class ActiveHandler {
+  constructor (handler, colors, locNamespaces)
 }
 
 

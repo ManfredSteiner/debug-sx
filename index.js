@@ -11,6 +11,8 @@ const handler = require('./handler')
 exports.humanize = require('ms');
 
 debug['loggers'] = [];
+debug.handlers = [];
+debug.activeHandlers = [];
 
 function init () {
   if (exports.location)
@@ -104,18 +106,19 @@ debug.log = function (...p) {
     let level = i !== -1 ? this.namespace.substr(i+1) : '';
     let date = new Date();
     if (this.handlers) {
-      let msg, msgl, prefix;
+      let msg, msgl, prefix, eprefix;
       for (let h of this.handlers) {
         if (!msg) {
           let sname = sprintf(exports.npattern, module, level);
           let stime = exports.tpattern ? dateFormat(this.curr, exports.tpattern) : '';
           let sdiff = exports.dpattern ? sprintf(exports.dpattern, debug.humanize(this.diff)) : '';      
           prefix = exports.sprefix + stime + ' ' + sdiff + ' ' + sname;
-          let eprefix = ' '.repeat(prefix.length);
+          eprefix = ' '.repeat(prefix.length);
           msg = ' ' + s.split('\n').join('\n' + eprefix);
         }
-        if (h.isLocationDesired(module, level)) {
-          location = '\n    ' + (new Error).stack.split('\n')[3];
+        let locEnabled = h.isLocationEnabled(this.namespace);
+        if (locEnabled === true || (locEnabled === undefined &&  isLocationEnabled(this.namespace)) ) {
+          location = '\n' + (new Error).stack.split('\n')[3];
           msgl = msg + location.split('\n').join('\n' + eprefix);
         }
         let colors = h.getColorCodes(module, level);
@@ -126,15 +129,15 @@ debug.log = function (...p) {
             h.wstream.write(prefix);
             h.wstream.write(colors.off);
           } else {
-            h.wstream.write(msgl ? msgl :msg);
+            h.wstream.write(prefix);
           }
+          h.wstream.write(msgl ? msgl :msg);
           h.wstream.write('\n');         
-        } else if (hname === 'console') {
-          if (h.location) {
-            if (colors)
-            console.log(colors.on + prefix + colors.off + msgl ? msgl : msg);
+        } else if (h.name === 'console') {
+          if (colors) {
+            console.log(colors.on + prefix + colors.off + (msgl ? msgl : msg) );
           } else {
-            console.log(cOn + prefix + cOff + msg);
+            console.log(prefix + (msgl ? msgl : msg) );
           }
         }
       }
@@ -143,7 +146,7 @@ debug.log = function (...p) {
 };
 
 
-function locationEnabled (name) {
+function isLocationEnabled (name) {
   if (!exports.location)
     return;
   
@@ -180,18 +183,77 @@ debug.formatters.e = (e) => {
 };
 
 
+debug.getLogFileHandler = function (filename) {
+  return debug.getHandler(filename);
+}
 
-// setting group to change output channel
-debug.setGroup = function (groupname, ...debug) {
-  if (Array.isArray(debug)) {
-    for (let d of debug) {
-      if (!d.groups[groupname]) {
-        d.groups[groupname] = { enabled: true, useColors: debug.useColors };
-        d.consoleEnabled = false;
-      }
+debug.getHandler = function (name) {
+  return debug.handlers.find(h => name === h.name);
+}
+
+debug.getHandlers = function () {
+  return [].concat(debug.handlers);
+}
+
+
+debug.createLogFileHandler = function(filename, colors, locNamespaces) {
+  if (debug.getHandler(filename))
+    throw new Error('LogFileHandler for file ' + filename + ' already created');
+
+  let wstream = fs.createWriteStream(filename, {flags: 'a'});
+  wstream.on('finish', function () {
+    console.log('log file ' + filename + ' has been written');
+  });
+  wstream.on('error', function (err) {
+    console.log('log file ' + filename + ' error');
+    console.log(err);
+  });
+  wstream.on('close', function () {
+    console.log('log file ' + filename + ' closed');
+  });
+  let h = handler.createHandler(filename, wstream, colors, locNamespaces);
+  debug.handlers.push(h);
+  return h;
+}
+
+
+debug.addActiveHandler = function (handler, namespace) {
+  let split = (locNamespaces || '').split(/[\s,]+/);
+  for (let s of split) {
+    if (!s) continue; // ignore empty strings
+    locNamespaces = split[i].replace(/\*/g, '.*?');
+    if (locNamespaces[0] === '-') {
+      skips.push(new RegExp('^' + locNamespaces.substr(1) + '$'));
+    } else {
+      names.push(new RegExp('^' + locNamespaces + '$'));
     }
   }
-};
+
+  debug.activeHandlers.push({ handler: handler, namespace: namespace });
+  debug.updateLoggerEnables();
+}
+
+debug.removeActiveHandler = function (activeHandler) {
+  let i = debug.activeHandlers.find( el => handler === el.handler && namespace === el.namespace);
+  if (i >= 0) {
+    debug.activeHandlers.mslice(i,1);
+    debug.updateLoggerEnables();
+    return true;
+  }
+  return false;
+}
+
+debug.getActiveHandlers =  function () {
+  return [].concat(debug.activeHandlers);
+}
+
+debug.updateLoggerEnables = function () {
+  for (let l of loggers) {
+    l.handlers = [];
+
+  }
+}
+
 
 // to monitor file use tail -f <file> or less -RS +F <file> 
 // or less -RS <file> and press Shift f (CTRL C to stop waiting)
