@@ -29,6 +29,7 @@ This documentation uses the original documentation of **debug** in a quoted styl
 * [Colors](#colors)
 * [Handlers](#handlers)
 * [Typescript](#typescript)
+* [Advanced Example](#advanced-example)
 
 ## Usage
 
@@ -251,7 +252,28 @@ The create functions accept up to four parameters:
 | Third    | comma seperated list of namespaces, where also locations should be printed (use prefix '-' to disable). |
 | Fourth    | color table (use undefined if no individually color table is desired).|
 
-### Advanced Usage: ###
+## Typescript
+
+Typescript definition file is included in this module.
+
+Example for a typescript source file:
+
+```ts
+import * as debugsx from "debug-sx";
+
+let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', "*");
+debugsx.addhandler(h);
+
+const debug:any = {};
+      debug.info = debugsx('main.INFO');
+
+debugsx.info('Start of application');
+```
+
+Find more information about the interface and the available functions in the file [index.d.ts][3].
+
+
+## Advanced example ##
 
 Example for parallel logging to console and file:
 
@@ -292,25 +314,6 @@ setTimeout(() => { debug.info('end of application') }, 1000);
 
 ```
 
-## Typescript
-
-Typescript definition file is included in this module.
-
-Example for a typescript source file:
-
-```ts
-import * as debugsx from "debug-sx";
-
-let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', "*");
-debugsx.addhandler(h);
-
-const debug:any = {};
-      debug.info = debugsx('main.INFO');
-
-debugsx.info('Start of application');
-```
-
-Find more information about the interface and the available functions in the file [index.d.ts][3].
 
 [1]: https://www.npmjs.com/package/debug
 [2]: https://www.npmjs.com/package/dateformat
