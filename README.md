@@ -39,10 +39,10 @@ const debugsx = require('debug-sx');
 const version = '1.0';
 
 const debug = {};
-      debug.fine = debugsx()('main::FINE');
-      debug.info = debugsx()('main::INFO');
-      debug.warn = debugsx()('main::WARN');
-      debug.err = debugsx()('main::ERR');
+      debug.fine = debugsx('main::FINE');
+      debug.info = debugsx('main::INFO');
+      debug.warn = debugsx('main::WARN');
+      debug.err = debugsx('main::ERR');
 
 const testobj = { name: 'to', value: '1000' };
 
@@ -231,7 +231,7 @@ Simple Example for parallel logging to console and file:
 ```js
 const debugsx = require('debug-sx');
 const debug = {};
-      debug.info = debugsx()('main::INFO');
+      debug.info = debugsx('main::INFO');
 
 let h1 = debugsx.createConsoleHandler();
 let h2 = debugsx.createFileHandler('/tmp/app.log');
