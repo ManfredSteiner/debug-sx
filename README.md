@@ -2,7 +2,7 @@
 
 An extension for the tiny and high performant Node.js debugging utility [debug][1].
 
-This documentation uses the original documentation of **debug** in a quoted style, in order to allow distinctness of **debug** and **debug-sx** features.
+This documentation uses the original documentation of **debug** in a quoted style, in order to allow distinctness between **debug** and **debug-sx** features.
 
 **debug-sx** can be used instead of debug. It extends the original debug instance with a couple of new features.
 
@@ -57,7 +57,7 @@ debug.err('There is a problem ...\n%e', new Error());
 ```
 Like the original Node.js module [debug][1], the __DEBUG__ environment variable controls, which namespaces are printed out. The usage of regular expressions allows proper configuration.
 
-Log-Levels are part of the namespace. The last "::" in namespace is used to seperate module and level name. 
+Log-Levels are part of the namespace. The last "::" in namespace is used to separate module and level name. 
 
 **Example**: only *INFO*, *WARN* and *ERR* messages should be printed out.  
 Set the environment variable before start of application (use command *set* on Windows systems).
@@ -318,5 +318,5 @@ setTimeout(() => { debug.info('end of application') }, 1000);
 
 [1]: https://www.npmjs.com/package/debug
 [2]: https://www.npmjs.com/package/dateformat
-[3]: index.d.ts
-[4]: example.js
+[3]: https://github.com/ManfredSteiner/debug-sx/blob/work/index.d.ts
+[4]: https://github.com/ManfredSteiner/debug-sx/blob/work/example.js
