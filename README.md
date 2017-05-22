@@ -17,6 +17,19 @@ This documentation uses the original documentation of **debug** in a quoted styl
    * high performant implementation prevents lack of speed, especially when no messages are created.
    * usable for Javascript and Typescript
 
+## Chapters in this documentation
+* [Features](#features)
+* [Usage](#usage)
+* [Conventions for namespaces](#conventions-for-namespaces)
+* [Wildcards](#wildcards)
+* [Environment Variables](#environment-variables)
+* [Formatters](#formatters)
+* [Browser support](#browser-support)
+* [Output streams](#output-streams)
+* [Colors](#colors)
+* [Handlers](#handlers)
+* [Typescript](#typescript)
+
 ## Usage
 
 **Example**:
@@ -159,7 +172,7 @@ There is no browser support and therefor Web Inspector Colors are not supported.
 
 #### Additional features of debug-sx: ####
 
-`debug-sx` offers handlers for console and files. See the chapter [Handlers](#Handlers).
+`debug-sx` offers handlers for console and files. See the chapter [Handlers](#handlers).
 
 ## Colors
 
