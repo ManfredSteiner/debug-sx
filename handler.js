@@ -19,10 +19,10 @@ ansiColors = {
 };
 
 defaultColorTable = [  
-  { level: /DEB*/, color: 'cyan', inverse: true },
-  { level: /FINE*/, color: 'white', inverse: true },
-  { level: /CONF*/, color: 'magenta', inverse: true },
-  { level: /INFO*/, color: 'green', inverse: true },
+  { level: /DEB.*/, color: 'cyan', inverse: true },
+  { level: /FINE.*/, color: 'white', inverse: true },
+  { level: /CONF.*/, color: 'magenta', inverse: true },
+  { level: /INFO.*/, color: 'green', inverse: true },
   { level: 'WARN', color: 'yellow', inverse: true },
   { level: 'ERR', color: 'red', inverse: true }
 ];
@@ -70,9 +70,10 @@ class Handler {
         this.location.names.push(new RegExp('^' + n + '$'));
       }
     }
-    if (typeof colors === 'boolean' || colors === 'true' || colors ==='false') 
-      this.colorTable = (colors === true) ? createColorTable(defaultColorTable) : undefined;
-    else if (colors)
+    if (typeof colors === 'boolean' || colors === 'true' || colors ==='false') {
+      let c = (colors === true || colors === 'true');
+      this.colorTable = c ? createColorTable(defaultColorTable) : undefined;
+    } else if (colors)
       this.colorTable = createColorTable(colors);
 
     this.getColorCodes = getColorCodes.bind(this);  
@@ -181,6 +182,22 @@ class HandlerFileStream extends HandlerWriteStream {
   }
 }
 
+function convertPattern (pattern) {
+  if (!pattern || (pattern instanceof RegExp))
+    return pattern;
+  
+  if (typeof pattern !== 'string')
+    return undefined; // value ignored
+
+  if (pattern.indexOf('*') > 0 || (pattern.startsWith('/') && pattern.endsWith('/')) ) {
+    let e = pattern.replace(/\*/g, '.*?');
+    if (e.startsWith('/') && e.endsWith('/'))
+      e = e.substr(1, e.length-2);
+    return new RegExp('^' + e + '$')
+  }
+
+  return pattern;
+}
 
 function createColorTable (config) {
   let rv = { namespace: {}, level: {}, module: {}, regExpNamespace: [], regExpLevel: [], regExpModule: [] };
@@ -196,27 +213,31 @@ function createColorTable (config) {
     r.off = c.inverse ? '\u001b[' + ansiColors['inverse'][1] + 'm' : '';
     r.off += '\u001b[' + ansiColors[c.color][1] + 'm';
     
-    if (c.namespace instanceof RegExp)
-      r.regExp = c.namespace;
-    else if (c.level instanceof RegExp)
-      r.regExp = c.level;
-    else if (c.module instanceof RegExp)
-      r.regExp = c.module;
-    
-    if (c.namespace instanceof RegExp) {
-      rv.regExpNamespace.push(r);
-    } else if (typeof c.namespace === 'string') 
-      rv.namespace[c.namespace] = r;
+    let pL = convertPattern(c.level);
+    let pM = convertPattern(c.module);
+    let pN = convertPattern(c.namespace);
 
-    if (c.level instanceof RegExp) {
+    if (pN instanceof RegExp)
+      r.regExp = pN;
+    else if (pL instanceof RegExp)
+      r.regExp = pL;
+    else if (pM instanceof RegExp)
+      r.regExp = pM;
+
+    if (pN instanceof RegExp)
+      rv.regExpNamespace.push(r);
+    else if (pN) 
+      rv.namespace[pN] = r;
+
+    if (pL instanceof RegExp) 
       rv.regExpLevel.push(r);
-    } else if (typeof c.level === 'string') 
-      rv.level[c.level] = r;
+    else if (pL) 
+      rv.level[pL] = r;
     
-    if (c.module instanceof RegExp) 
+    if (pM instanceof RegExp) 
       rv.regExpModule.push(r);
-    if (typeof c.module === 'string') 
-      rv.module[c.module] = r;
+    else if (pM) 
+      rv.module[pM] = r;
   }
   return rv;
 }

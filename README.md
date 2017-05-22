@@ -35,6 +35,8 @@ This documentation uses the original documentation of **debug** in a quoted styl
 **Example**:
 
 ```js
+process.env['DEBUG'] = "*";
+
 const debugsx = require('debug-sx');
 const version = '1.0';
 
@@ -44,7 +46,7 @@ const debug = {};
       debug.warn = debugsx('main::WARN');
       debug.err = debugsx('main::ERR');
 
-const testobj = { name: 'to', value: '1000' };
+const testobject = { name: 'to', value: '1000' };
 
 ...
 debug.info('Start of application, version %s', version);
@@ -118,6 +120,8 @@ A couple of additional environment variables are possible:
 | `DEBUG_STREAM`   | Default output for console handlers. The values `stdout` oder `stderr` are used. If no value is given, `stderr` is used. |
 
 Object inspect definitions can also be given in a dedicated way to one handler or one debug instance.
+
+For an example see file [example.js][4].
 
 ## Formatters
 > Debug uses [printf-style](https://wikipedia.org/wiki/Printf_format_string) formatting. Below are the officially supported formatters:
@@ -252,26 +256,39 @@ The create functions accept up to four parameters:
 Example for parallel logging to console and file:
 
 ```js
+process.env['DEBUG'] = "*::INFO, *::WARN, *::ERR";
+process.env['DEBUG_LOCATION'] = "*::INFO";
+process.env['DEBUG_COLORS'] = "true";
+process.env['DEBUG_STREAM'] = "stdout";
+process.env['DEBUG_WMODULE'] = "15";
+process.env['DEBUG_WLEVEL'] = "6";
+process.env['DEBUG_WTIMEDIFF'] = "6";
+process.env['DEBUG_TIME'] = "ddd, yyyy-mm-dd HH:MM:ss.l";
+
 const debugsx = require('debug-sx');
 const debug = {};
-      debug.info = debugsx()('main::INFO');
+      debug.info = debugsx('main::INFO');
+      debug.warn = debugsx('main::WARN');
 
 let hc = debugsx.createConsoleHandler('stdout', "*", "-*", []);
 let hf = debugsx.createFileHandler(
            '/tmp/app.log',    // file name
            '*::ERR,*::WARN',  // enabled namespaces
            "*::ERR,-*::INFO", // enabled for printing location
-           [ 
-             { namespace: "*.ERR", color:"red", inverse:true },
-             { namespace: "*.WARN", color:"yellow", inverse:true } 
+           [
+             { level: "ERR", color:"red", inverse:true },
+             { namespace: /.*::WARN/, color:"blue", inverse:true }
            ]);
 
 debugsx.addHandler(hc, hf);
 
-debugsx.info('Start of application');
+debug.info('Start of application');
+debug.warn('Message should be visible in file...');
 
 debugsx.removeHandler(hf);
-debugsx.info('Message only visible on console');
+debug.info('Message only visible on console');
+
+setTimeout(() => { debug.info('end of application') }, 1000);
 
 ```
 
@@ -298,3 +315,4 @@ Find more information about the interface and the available functions in the fil
 [1]: https://www.npmjs.com/package/debug
 [2]: https://www.npmjs.com/package/dateformat
 [3]: index.d.ts
+[4]: example.js
