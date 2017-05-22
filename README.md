@@ -299,7 +299,8 @@ let hf = debugsx.createFileHandler(
            "*::ERR,-*::INFO", // enabled for printing location
            [
              { level: "ERR", color:"red", inverse:true },
-             { namespace: /.*::WARN/, color:"blue", inverse:true }
+             { namespace: /.*::WARN/, color:"blue", inverse:true },
+             { module: "server*", color:"magenta"}
            ]);
 
 debugsx.addHandler(hc, hf);
