@@ -1,5 +1,5 @@
 {
-  "version": "0.0.10",
+  "version": "0.1.0",
   "name": "debug-sx",
   "description": "extension for small debugging utility",
   "main": "index",
@@ -18,6 +18,8 @@
   "dependencies": {
     "debug": "^2.6.6",
     "sprintf": "^1.1.0",
-    "dateFormat": "^2.0.0"
+    "dateFormat": "^2.0.0",
+    "semver": "^4.3.6",
+    "ms": "^0.7.3"
    },
 }

@@ -71,7 +71,7 @@ class Handler {
       }
     }
     if (typeof colors === 'boolean' || colors === 'true' || colors ==='false') 
-      this.colorTable = colors ? createColorTable(defaultColorTable) : undefined;
+      this.colorTable = (colors === true) ? createColorTable(defaultColorTable) : undefined;
     else if (colors)
       this.colorTable = createColorTable(colors);
 

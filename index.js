@@ -12,11 +12,15 @@ module.exports =  debug;
 debug.humanize = require('ms');
 
 debug.sprefix = process.env['DEBUG_PREFIX'] || ''; 
-debug.modulewidth = +process.env['DEBUG_MODULEWIDTH'] || 1;
-debug.levelwidth = +process.env['DEBUG_LEVELWIDTH'] || 1;
+debug.modulewidth = +process.env['DEBUG_WMODULE'] || 1;
+debug.levelwidth = +process.env['DEBUG_WLEVEL'] || 1;
 debug.npattern =  '%-' + debug.modulewidth + 's %-' + debug.levelwidth + 's';
 debug.tpattern = process.env['DEBUG_TIME'] || 'HH:MM:ss.l';
-debug.dpattern = process.env['DEBUG_TIMEDIFF'] ? '+%-' + process.env['DEBUG_TIMEDIFF'] + 's' : '';
+debug.dpattern = process.env['DEBUG_WTIMEDIFF'] ? '+%-' + process.env['DEBUG_WTIMEDIFF'] + 's' : '';
+
+if (process.env['DEBUG_COLORS'] === undefined) {
+  process.env['DEBUG_COLORS'] = 'true';
+}
 
 debug.loggers = [];
 debug.handlers = [];
@@ -80,9 +84,9 @@ debug.init = function (d) {
     for (let att in debug.opts) 
       d.inspectOpts[att] = debug.opts[att];
   }
-  let i = d.namespace.lastIndexOf('.');
+  let i = d.namespace.lastIndexOf('::');
   d.module = i !== -1 ? d.namespace.substr(0, i) : d.namespace;
-  d.level = i !== -1 ? d.namespace.substr(i+1) : '';
+  d.level = i !== -1 ? d.namespace.substr(i+2) : '';
   d.init = init.bind(d);
   d.init();
   debug.loggers.push(d);
