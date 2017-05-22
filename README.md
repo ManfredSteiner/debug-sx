@@ -192,7 +192,7 @@ Colors will be defined by a color record:
   inverse:true 
 }
 ```
-Instead of `namespace`, you can also use `module` or `level` to define which namespace should be covered by this color record. It is also allowed to use regular expressions or wildcards in the string.
+Instead of `namespace`, you can also use `module` or `level` to define which namespace should be covered by this color record. It is also allowed to use regular expressions or wildcards in the string. Any string beginning with "/" and ending with "/" is converted into a regular expression. 
 
 The available colors are:  
 *bold*, *italic*, *underline*, *white*, *grey*, *black*,  *blue*, *cyan*, *green*, *magenta*, *red* and *yellow*.
