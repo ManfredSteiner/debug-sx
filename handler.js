@@ -267,6 +267,13 @@ function getColorCodes (namespace, module, level) {
   }
 
 function createConsoleHandler (fd, namespaces, locationNamespaces, colors) {
+  if (typeof filename === 'object') {
+    let config = fd;
+    fd = config.fd;
+    namespaces = config.namespaces;
+    locationNamespaces = config.locationNamespaces;
+    colors = config.colors;
+  }
   fd = fd || process.env['DEBUG_STREAM'] || 'stderr';
   namespaces = namespaces || process.env['DEBUG'];
   locationNamespaces = locationNamespaces || process.env['DEBUG_LOCATION'];
@@ -276,6 +283,13 @@ function createConsoleHandler (fd, namespaces, locationNamespaces, colors) {
 }
 
 function createFileHandler (filename, namespaces, locationNamespaces, colors) {
+  if (typeof filename === 'object') {
+    let config = filename;
+    filename = config.filename;
+    namespaces = config.namespaces;
+    locationNamespaces = config.locationNamespaces;
+    colors = config.colors;
+  }
   namespaces = namespaces || process.env['DEBUG'];
   locationNamespaces = locationNamespaces || process.env['DEBUG_LOCATION'];
   colors = colors || process.env['DEBUG_COLORS'];

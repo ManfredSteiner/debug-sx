@@ -25,7 +25,9 @@ declare namespace debugsx {
 
     createDebug (namespace: string, opts?: IInspectOpts): IDebugger,
     createConsoleHandler (fd?: string, namespaces?: string, locationNamespaces?: string, colors?: IColor []): IHandler, 
+    createConsoleHandler (config: IConsoleHandlerConfig): IHandler, 
     createFileHandler (filename:string, namespaces?: string, locationNamespaces?: string, colors?: IColor []): IHandler,
+    createFileHandler (config: IFileHandlerConfig): IHandler,
     addHandler: (...handler: IHandler []) => void,
     removeHandler: (handler: IHandler) => boolean
   }
@@ -104,6 +106,20 @@ declare namespace debugsx {
     level?: string | RegExp;
     module?: string | RegExp;
     inverse?: boolean;
+  }
+
+  export interface IFileHandlerConfig {
+    filename: string,
+    namespaces?: string;
+    locationNamespaces?: string,
+    colors?: string
+  }
+
+  export interface IConsoleHandlerConfig {
+    fd: string,
+    namespaces?: string;
+    locationNamespaces?: string,
+    colors?: string
   }
 
 }
