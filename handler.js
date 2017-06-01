@@ -21,10 +21,10 @@ ansiColors = {
 defaultColorTable = [  
   { level: /DEB.*/, color: 'cyan', inverse: true },
   { level: /FINE.*/, color: 'white', inverse: true },
-  { level: /CONF.*/, color: 'magenta', inverse: true },
-  { level: /INFO.*/, color: 'green', inverse: true },
+  { level: 'CONFIG', color: 'magenta', inverse: true },
+  { level: 'INFO', color: 'green', inverse: true },
   { level: 'WARN', color: 'yellow', inverse: true },
-  { level: 'ERR', color: 'red', inverse: true }
+  { level: 'SEVERE', color: 'red', inverse: true }
 ];
 
 

@@ -192,5 +192,32 @@ function formatLogData(logData) {
   return util.format.apply(util, wrapErrorsWithInspect(data));
 }
 
+debug.createSimpleLogger = function (namespace) {
+  return {
+    info: debug.createDebug(namespace + '::INFO'),
+    warn: debug.createDebug(namespace + '::WARN')
+  };
+}
+
+debug.createDefaultLogger = function (namespace) {
+  return  {
+    fine:   debug.createDebug(namespace + '::FINE'),
+    config: debug.createDebug(namespace + '::CONFIG'),
+    info:   debug.createDebug(namespace + '::INFO'),
+    warn:   debug.createDebug(namespace + '::WARN'),
+  };
+}
+debug.createFullLogger = function (namespace) {
+  return  {
+    finest: debug.createDebug(namespace + '::FINEST'),
+    finer:  debug.createDebug(namespace + '::FINER'),
+    fine:   debug.createDebug(namespace + '::FINE'),
+    config: debug.createDebug(namespace + '::CONFIG'),
+    info:   debug.createDebug(namespace + '::INFO'),
+    warn:   debug.createDebug(namespace + '::WARN'),
+    severe: debug.createDebug(namespace + '::SEVERE')
+  };
+}
+
 
 

@@ -28,6 +28,9 @@ declare namespace debugsx {
     createConsoleHandler (config: IConsoleHandlerConfig): IHandler, 
     createFileHandler (filename:string, namespaces?: string, locationNamespaces?: string, colors?: IColor []): IHandler,
     createFileHandler (config: IFileHandlerConfig): IHandler,
+    createSimpleLogger (namespace: string): ISimpleLogger,
+    createDefaultLogger (namespace: string): IDefaultLogger,
+    createFullLogger (namespace: string): IFullLogger,
     addHandler: (...handler: IHandler []) => void,
     removeHandler: (handler: IHandler) => boolean
   }
@@ -122,4 +125,26 @@ declare namespace debugsx {
     colors?: string
   }
 
+  export interface ISimpleLogger {
+    info: IDebugger;
+    warn: IDebugger;
+  }
+
+   
+  export interface IDefaultLogger {
+    fine: IDebugger;
+    config: IDebugger;
+    info: IDebugger;
+    warn: IDebugger;
+  }
+
+  export interface IFullLogger {
+    finest: IDebugger;
+    finer: IDebugger;
+    fine: IDebugger;
+    config: IDebugger;
+    info: IDebugger;
+    warn: IDebugger;
+    severe: IDebugger;
+  }
 }

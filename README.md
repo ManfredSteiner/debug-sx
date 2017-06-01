@@ -258,16 +258,43 @@ Typescript definition file is included in this module.
 
 Example for a typescript source file:
 
+
 ```ts
 import * as debugsx from "debug-sx";
+
+const debug: debugsx.ISimpleLogger = debugsx.createSimpleLogger('main');
+let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', "*");
+debugsx.addhandler(h);
+
+debug.info('Start of application');
+debug.warn(new Error('This is an exception'));
+```
+There are three default loggers available:
+1)  **ISimpleLogger**  
+    Levels: *info*, *warn*
+2)  **IDefaultLogger**   
+    Levels: *fine*, *config*, *info*, *warn*
+3)  **IFullLogger**  
+    Levels: *finest*, *finer*, *fine*, *config*, *info*, *warn*, *severe*
+
+You can also define custom levels:
+```ts
+import * as debugsx from "debug-sx";
+
+const debug: {
+  debx: debug.IDebugger, 
+  info: debug.IDebugger, 
+  warn: debug.IDebugger 
+} = {
+  debx: debugsx('main::DEBX'),
+  info: debugsx('main::INFO'),
+  warn: debugsx('main::WARN')
+};
 
 let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', "*");
 debugsx.addhandler(h);
 
-const debug:any = {};
-      debug.info = debugsx('main.INFO');
-
-debugsx.info('Start of application');
+debug.debx('Start of application');
 ```
 
 Find more information about the interface and the available functions in the file [index.d.ts][3].
