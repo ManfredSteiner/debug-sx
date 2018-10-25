@@ -163,6 +163,44 @@ class HandlerConsoleStream extends HandlerWriteStream {
   }
 }
 
+
+class HandlerRawConsole {
+  constructor () {
+    this.writeable = true;
+    this.lineout = '';
+  }
+  
+  write (...args) {
+    if (this.writeable) {
+      if (Array.isArray(args)) {
+        for (const s of args) {
+          if (typeof(s) === 'string') {
+            if (s !== '') {
+              const i = s.indexOf('\n');
+              if (i >= 0) {
+                this.lineout += s.substr(0, i);
+                console.log(this.lineout);
+                this.lineout = s.substr(i + 1);
+              } else {
+                this.lineout += s;
+              }
+            }
+          }
+        }
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  end () {
+    if (this.writeable) {
+      this.writeable = false;
+    }
+  }
+}
+
 class HandlerFileStream extends HandlerWriteStream {
   constructor (filename, wstream) {
     super(wstream ? wstream : fs.createWriteStream(filename, {flags: 'a'}));
@@ -267,18 +305,19 @@ function getColorCodes (namespace, module, level) {
   }
 
 function createConsoleHandler (fd, namespaces, locationNamespaces, colors) {
-  if (typeof filename === 'object') {
-    let config = fd;
-    fd = config.fd;
-    namespaces = config.namespaces;
-    locationNamespaces = config.locationNamespaces;
-    colors = config.colors;
-  }
   fd = fd || process.env['DEBUG_STREAM'] || 'stderr';
   namespaces = namespaces || process.env['DEBUG'];
   locationNamespaces = locationNamespaces || process.env['DEBUG_LOCATION'];
   colors = colors || process.env['DEBUG_COLORS'];
   let hstream = new HandlerConsoleStream(fd ? fd : 'stderr');
+  return new Handler(hstream, namespaces, locationNamespaces, colors);
+}
+
+function createRawConsoleHandler (namespaces, locationNamespaces, colors) {
+  namespaces = namespaces || process.env['DEBUG'];
+  locationNamespaces = locationNamespaces || process.env['DEBUG_LOCATION'];
+  colors = colors || process.env['DEBUG_COLORS'];
+  let hstream = new HandlerRawConsole();
   return new Handler(hstream, namespaces, locationNamespaces, colors);
 }
 
@@ -299,5 +338,6 @@ function createFileHandler (filename, namespaces, locationNamespaces, colors) {
 
 
 module.exports.ActiveHandler = ActiveHandler;
-module.exports.createConsoleHandler = createConsoleHandler; 
+module.exports.createConsoleHandler = createConsoleHandler;
+module.exports.createRawConsoleHandler = createRawConsoleHandler;
 module.exports.createFileHandler = createFileHandler;

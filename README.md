@@ -16,6 +16,7 @@ This documentation uses the original documentation of **debug** in a quoted styl
    * absolut **timestamps** which format can be configured
    * high performant implementation prevents lack of speed, especially when no messages are created.
    * usable for Javascript and Typescript
+   * special handler for remote debugging
 
 ## Chapters in this documentation
 * [Features](#features)
@@ -30,13 +31,14 @@ This documentation uses the original documentation of **debug** in a quoted styl
 * [Handlers](#handlers)
 * [Typescript](#typescript)
 * [Advanced Example](#advanced-example)
+* [# Remote platform debugging](#remote-platform-debugging)
 
 ## Usage
 
 **Example**:
 
 ```js
-process.env['DEBUG'] = "*";
+process.env['DEBUG'] = '*';
 
 const debugsx = require('debug-sx');
 const version = '1.0';
@@ -67,7 +69,7 @@ Set the environment variable before start of application (use command *set* on W
 ... or define this configuration by program before you import **debug-sx**:
 
 ```js
-process.env['DEBUG'] = "*::INFO, *::WARN, *::ERR";
+process.env['DEBUG'] = '*::INFO, *::WARN, *::ERR';
 const debugsx = require('debug-sx');
 ...
 ```
@@ -156,7 +158,7 @@ A couple of additional formatters are available:
 ```js
 const createDebug = require('debug')
 createDebug.formatters.h = (v) => {
-  return v.toString('hex')
+    return v.toString('hex')
 }
 
 // …elsewhere
@@ -187,12 +189,12 @@ Colors will be defined by a color record:
 
 ```js
 {
-  namespace: "main.INFO",
-  color:"blue",
-  inverse:true 
+    namespace: 'main.INFO',
+    color: 'blue',
+    inverse: true 
 }
 ```
-Instead of `namespace`, you can also use `module` or `level` to define which namespace should be covered by this color record. It is also allowed to use regular expressions or wildcards in the string. Any string beginning with "/" and ending with "/" is converted into a regular expression. 
+Instead of `namespace`, you can also use `module` or `level` to define which namespace should be covered by this color record. It is also allowed to use regular expressions or wildcards in the string. Any string beginning with `/` and ending with `/` is converted into a regular expression. 
 
 The available colors are:  
 *bold*, *italic*, *underline*, *white*, *grey*, *black*,  *blue*, *cyan*, *green*, *magenta*, *red* and *yellow*.
@@ -203,12 +205,12 @@ These color records will be combined to an array table, which can be used when a
 
 ```js
 let colorConfig = [
-  { level: /DEB*/, color: 'cyan', inverse: true },
-  { level: /FINE*/, color: 'white', inverse: true },
-  { level: /CONF*/, color: 'magenta', inverse: true },
-  { level: /INFO*/, color: 'green', inverse: true },
-  { level: 'WARN', color: 'yellow', inverse: true },
-  { level: 'ERR', color: 'red', inverse: true }
+    { level: /DEB*/,   color: 'cyan',   inverse: true },
+    { level: /FINE*/, color: 'white',   inverse: true },
+    { level: /CONF*/, color: 'magenta', inverse: true },
+    { level: /INFO*/, color: 'green',   inverse: true },
+    { level: 'WARN',  color: 'yellow',  inverse: true },
+    { level: 'ERR',   color: 'red',     inverse: true }
 ];
 ```
 This example is used as *default color table* when no custom colors are configured.
@@ -225,6 +227,7 @@ If no handler is configured, a default console handler for `stderr` will be used
 
 There are two handler types available:
 * console handler (for `stdout` or `stderr`)
+* raw console handler for remote debugging (output via `console.log`)
 * file handler
 
 Handlers can be added or removed while runtime. But hold in mind, that on each change of handler, all debug instances are checked if they are covered by this change. This may need some amount of time, depending of the quantity of debug instances created up to now.
@@ -260,10 +263,10 @@ Example for a typescript source file:
 
 
 ```ts
-import * as debugsx from "debug-sx";
+import * as debugsx from 'debug-sx';
 
 const debug: debugsx.ISimpleLogger = debugsx.createSimpleLogger('main');
-let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', "*");
+let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', '*');
 debugsx.addhandler(h);
 
 debug.info('Start of application');
@@ -279,19 +282,19 @@ There are three default loggers available:
 
 You can also define custom levels:
 ```ts
-import * as debugsx from "debug-sx";
+import * as debugsx from 'debug-sx';
 
 const debug: {
-  debx: debug.IDebugger, 
-  info: debug.IDebugger, 
-  warn: debug.IDebugger 
+    debx: debug.IDebugger, 
+    info: debug.IDebugger, 
+    warn: debug.IDebugger 
 } = {
-  debx: debugsx('main::DEBX'),
-  info: debugsx('main::INFO'),
-  warn: debugsx('main::WARN')
+    debx: debugsx('main::DEBX'),
+    info: debugsx('main::INFO'),
+    warn: debugsx('main::WARN')
 };
 
-let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', "*");
+let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', '*');
 debugsx.addhandler(h);
 
 debug.debx('Start of application');
@@ -305,30 +308,30 @@ Find more information about the interface and the available functions in the fil
 Example for parallel logging to console and file:
 
 ```js
-process.env['DEBUG'] = "*::INFO, *::WARN, *::ERR";
-process.env['DEBUG_LOCATION'] = "*::INFO";
-process.env['DEBUG_COLORS'] = "true";
-process.env['DEBUG_STREAM'] = "stdout";
-process.env['DEBUG_WMODULE'] = "15";
-process.env['DEBUG_WLEVEL'] = "6";
-process.env['DEBUG_WTIMEDIFF'] = "6";
-process.env['DEBUG_TIME'] = "ddd, yyyy-mm-dd HH:MM:ss.l";
+process.env['DEBUG'] = '*::INFO, *::WARN, *::ERR';
+process.env['DEBUG_LOCATION'] = '*::INFO';
+process.env['DEBUG_COLORS'] = 'true';
+process.env['DEBUG_STREAM'] = 'stdout';
+process.env['DEBUG_WMODULE'] = '15';
+process.env['DEBUG_WLEVEL'] = '6';
+process.env['DEBUG_WTIMEDIFF'] = '6';
+process.env['DEBUG_TIME'] = 'ddd, yyyy-mm-dd HH:MM:ss.l';
 
 const debugsx = require('debug-sx');
 const debug = {};
       debug.info = debugsx('main::INFO');
       debug.warn = debugsx('main::WARN');
 
-let hc = debugsx.createConsoleHandler('stdout', "*", "-*", []);
+let hc = debugsx.createConsoleHandler('stdout', '*', '-*', []);
 let hf = debugsx.createFileHandler(
-           '/tmp/app.log',    // file name
-           '*::ERR,*::WARN',  // enabled namespaces
-           "*::ERR,-*::INFO", // enabled for printing location
-           [
-             { level: "ERR", color:"red", inverse:true },
-             { namespace: /.*::WARN/, color:"blue", inverse:true },
-             { module: "server*", color:"magenta"}
-           ]);
+             '/tmp/app.log',     // file name
+             '*::ERR,*::WARN',   // enabled namespaces
+             '*::ERR,-*::INFO',  // enabled for printing location
+             [
+                 { level: 'ERR', color: 'red', inverse: true },
+                 { namespace: /.*::WARN/, color: 'blue', inverse: true },
+                 { module: 'server*', color: 'magenta' }
+             ]);
 
 debugsx.addHandler(hc, hf);
 
@@ -342,8 +345,24 @@ setTimeout(() => { debug.info('end of application') }, 1000);
 
 ```
 
+## Remote platform debugging
+
+Debugging on remote platforms may cause problems, if streams to stdout or stderr are not 
+redirected to the development platform (see also [https://stackoverflow.com/questions/52940890][5]).
+
+In cases, where `console.log` works, a `RawConsoleHandler` could be used, instead of normal `ConsoleHandler`.
+
+```ts
+import * as debugsx from 'debug-sx';
+
+let h : debugsx.IHandler = debugsx.createRawConsoleHandler('*');
+debugsx.addhandler(h);
+
+debug.debx('Start of application');
+```
 
 [1]: https://www.npmjs.com/package/debug
 [2]: https://www.npmjs.com/package/dateformat
 [3]: https://github.com/ManfredSteiner/debug-sx/blob/work/index.d.ts
 [4]: https://github.com/ManfredSteiner/debug-sx/blob/work/example.js
+[5]: https://stackoverflow.com/questions/52940890

@@ -26,6 +26,7 @@ declare namespace debugsx {
     createDebug (namespace: string, opts?: IInspectOpts): IDebugger,
     createConsoleHandler (fd?: string, namespaces?: string, locationNamespaces?: string, colors?: IColor []): IHandler, 
     createConsoleHandler (config: IConsoleHandlerConfig): IHandler, 
+    createRawConsoleHandler (namespaces?: string, locationNamespaces?: string): IHandler, 
     createFileHandler (filename:string, namespaces?: string, locationNamespaces?: string, colors?: IColor []): IHandler,
     createFileHandler (config: IFileHandlerConfig): IHandler,
     createSimpleLogger (namespace: string): ISimpleLogger,

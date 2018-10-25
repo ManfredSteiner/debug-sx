@@ -6,7 +6,7 @@ const dateFormat = require('dateformat');
 const fs = require('fs');
 const util = require('util');
 const semver = require('semver');
-const handler = require('./handler')
+const handler = require('./handler');
 
 module.exports =  debug;
 debug.humanize = require('ms');
@@ -116,6 +116,7 @@ init = function () {
 
 
 debug.createConsoleHandler = handler.createConsoleHandler;
+debug.createRawConsoleHandler = handler.createRawConsoleHandler;
 debug.createFileHandler = handler.createFileHandler;
 
 debug.addHandler = function (...handler) {
