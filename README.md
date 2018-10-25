@@ -31,7 +31,7 @@ This documentation uses the original documentation of **debug** in a quoted styl
 * [Handlers](#handlers)
 * [Typescript](#typescript)
 * [Advanced Example](#advanced-example)
-* [# Remote platform debugging](#remote-platform-debugging)
+* [Remote platform debugging](#remote-platform-debugging)
 
 ## Usage
 
@@ -350,7 +350,8 @@ setTimeout(() => { debug.info('end of application') }, 1000);
 Debugging on remote platforms may cause problems, if streams to stdout or stderr are not 
 redirected to the development platform (see also [https://stackoverflow.com/questions/52940890][5]).
 
-In cases, where `console.log` works, a `RawConsoleHandler` could be used, instead of normal `ConsoleHandler`.
+In cases, where `console.log` works, a `RawConsoleHandler` could be used, instead of normal `ConsoleHandler`.  
+This handler uses the statement `console.log` instead of writing log messages via streams (for example stdout).
 
 ```ts
 import * as debugsx from 'debug-sx';
