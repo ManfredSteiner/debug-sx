@@ -1,25 +1,25 @@
 {
-  "version": "0.2.0",
-  "name": "debug-sx",
-  "description": "extension for small debugging utility",
-  "main": "index",
-  "types": "index",
-  "repository" : { "type" : "git", "url" : "https://github.com/ManfredSteiner/debug-sx" },
-  "scripts": {
-  "test": "echo \"Error: no test specified\" && exit 1",
-  "author": { "name": "Manfred Steiner", "email": "sx@htl-kaindorf.at" },
-  "license": "MIT"
-  },
-  "keywords": [
-    "debug",
-    "log",
-    "debugger"
-  ],
-  "dependencies": {
-    "debug": "^2.6.6",
-    "sprintf-js": "^1.1.0",
-    "dateformat": "^2.0.0",
-    "semver": "^4.3.6",
-    "ms": "^0.7.3"
-   }
+    "version": "0.2.1",
+    "name": "debug-sx",
+    "description": "extension for small debugging utility",
+    "main": "index",
+    "types": "index",
+    "repository" : { "type" : "git", "url" : "https://github.com/ManfredSteiner/debug-sx" },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": { "name": "Manfred Steiner", "email": "Manfred.Steiner@gmx.at" },
+    "license": "MIT",
+    "keywords": [
+        "debug",
+        "log",
+        "debugger"
+    ],
+    "dependencies": {
+        "debug": "^2.6.6",
+        "sprintf-js": "^1.1.0",
+        "dateformat": "^2.0.0",
+        "semver": "^4.3.6",
+        "ms": "^0.7.3"
+    }
 }
