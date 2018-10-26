@@ -6,6 +6,21 @@ This documentation uses the original documentation of **debug** in a quoted styl
 
 **debug-sx** can be used instead of debug. It extends the original debug instance with a couple of new features.
 
+## Installation
+
+For Javascript:
+
+```bash
+$ npm install debug-sx
+```
+
+For Typescript:
+
+```bash
+$ npm install debug-sx
+$ npm install --save-dev @types/debug
+```
+
 ## Features
 
    * ability to print out the **location** where the message is created
