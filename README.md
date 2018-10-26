@@ -204,7 +204,7 @@ __Hint:__ Hold in mind, that support of color depends on terminal type.
 These color records will be combined to an array table, which can be used when a handler is created.
 
 ```js
-let colorConfig = [
+const colorConfig = [
     { level: /DEB*/,   color: 'cyan',   inverse: true },
     { level: /FINE*/, color: 'white',   inverse: true },
     { level: /CONF*/, color: 'magenta', inverse: true },
@@ -241,8 +241,8 @@ const debugsx = require('debug-sx');
 const debug = {};
       debug.info = debugsx('main::INFO');
 
-let h1 = debugsx.createConsoleHandler();
-let h2 = debugsx.createFileHandler('/tmp/app.log');
+const h1 = debugsx.createConsoleHandler();
+const h2 = debugsx.createFileHandler('/tmp/app.log');
 debugsx.addHandler(h1, h2);
 ```
 The create functions accept up to four parameters:
@@ -266,7 +266,7 @@ Example for a typescript source file:
 import * as debugsx from 'debug-sx';
 
 const debug: debugsx.ISimpleLogger = debugsx.createSimpleLogger('main');
-let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', '*');
+const h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', '*');
 debugsx.addhandler(h);
 
 debug.info('Start of application');
@@ -294,7 +294,7 @@ const debug: {
     warn: debugsx('main::WARN')
 };
 
-let h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', '*');
+const h : debugsx.IHandler = debugsx.createConsoleHandler('stdout', '*');
 debugsx.addhandler(h);
 
 debug.debx('Start of application');
@@ -322,8 +322,8 @@ const debug = {};
       debug.info = debugsx('main::INFO');
       debug.warn = debugsx('main::WARN');
 
-let hc = debugsx.createConsoleHandler('stdout', '*', '-*', []);
-let hf = debugsx.createFileHandler(
+const hc = debugsx.createConsoleHandler('stdout', '*', '-*', []);
+const hf = debugsx.createFileHandler(
              '/tmp/app.log',     // file name
              '*::ERR,*::WARN',   // enabled namespaces
              '*::ERR,-*::INFO',  // enabled for printing location
@@ -356,10 +356,11 @@ This handler uses the statement `console.log` instead of writing log messages vi
 ```ts
 import * as debugsx from 'debug-sx';
 
-let h : debugsx.IHandler = debugsx.createRawConsoleHandler('*');
+const debug: debugsx.IDefaultLogger = debugsx.createDefaultLogger('main');
+const h : debugsx.IHandler = debugsx.createRawConsoleHandler('*');
 debugsx.addhandler(h);
 
-debug.debx('Start of application');
+debug.info('Start of application');
 ```
 
 [1]: https://www.npmjs.com/package/debug
@@ -367,3 +368,4 @@ debug.debx('Start of application');
 [3]: https://github.com/ManfredSteiner/debug-sx/blob/work/index.d.ts
 [4]: https://github.com/ManfredSteiner/debug-sx/blob/work/example.js
 [5]: https://stackoverflow.com/questions/52940890
+
