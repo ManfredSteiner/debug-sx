@@ -122,7 +122,7 @@ debug.createFileHandler = handler.createFileHandler;
 debug.addHandler = function (...handler) {
   if (!Array.isArray(handler))
     handler = [ handler ];
-  this.handlers = this.handlers.concat(handler);
+  this.handlers.push(...handler);
   for (let d of debug.loggers)
     d.init();
 }
